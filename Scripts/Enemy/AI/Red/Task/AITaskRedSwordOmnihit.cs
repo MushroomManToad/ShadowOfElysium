@@ -1,0 +1,121 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class AITaskRedSwordOmnihit : AITask
+{
+    private GameObject longSword;
+    private int timer, breakDur, ssT, num;
+    private bool nextState = false;
+
+    public AITaskRedSwordOmnihit(AIDataSet data, GameObject longSword, int breakDur) : base(data)
+    {
+        this.longSword = longSword;
+        timer = getDuration();
+        this.breakDur = breakDur;
+        nextState = Random.Range(0.0f, 1.0f) < 0.5f ? true : false;
+    }
+
+    public override void runAction()
+    {
+        if (getDuration() - timer < 31)
+        {
+            if (ssT == 0)
+            {
+                spawnSwordAt((float) num * 1.5f + -4.5f, 7.0f);
+                num++;
+                ssT = 4;
+            }
+            else ssT--;
+        }
+        else if (getDuration() - timer - breakDur < 31 && getDuration() - timer - breakDur >= 0)
+        {
+            if (nextState)
+            {
+                if (ssT == 0)
+                {
+                    spawnSwordAt(-7.0f, (float)(num - 7) * 1.5f + -4.5f);
+                    num++;
+                    ssT = 4;
+                }
+                else ssT--;
+            }
+            else
+            {
+                if (ssT == 0)
+                {
+                    spawnSwordAt(7.0f, (float)(num - 7) * 1.5f + -4.5f);
+                    num++;
+                    ssT = 4;
+                }
+                else ssT--;
+            }
+        }
+        else if (getDuration() - timer - breakDur * 2 < 31 && getDuration() - timer - breakDur * 2 >= 0)
+        {
+            if (nextState)
+            {
+                if (ssT == 0)
+                {
+                    spawnSwordAt(7.0f, (float)(num - 14) * 1.5f + -4.5f);
+                    num++;
+                    ssT = 4;
+                }
+                else ssT--;
+            }
+            else
+            {
+                if (ssT == 0)
+                {
+                    spawnSwordAt(-7.0f, (float)(num - 14) * 1.5f + -4.5f);
+                    num++;
+                    ssT = 4;
+                }
+                else ssT--;
+            }
+        }
+        else if(ssT != 0)
+        {
+            ssT = 0;
+        }
+        timer--;
+    }
+
+    public override void endAction()
+    {
+        timer = getDuration();
+        ssT = 0;
+        num = 0;
+        nextState = Random.Range(0.0f, 1.0f) < 0.5f ? true : false;
+    }
+
+    public override bool endCondition()
+    {
+        return false;
+    }
+
+    public override bool runCondition()
+    {
+        if (getAI().getCurrHealth() / getAI().getMaxHealth() > 0.33f)
+        {
+            return false;
+        }
+        else return true;
+    }
+
+    private void spawnSwordAt(float x, float y)
+    {
+        GameObject sword = MonoBehaviour.Instantiate(longSword);
+        if (sword != null && sword.GetComponent<TrackerSword>() != null)
+        {
+            sword.transform.position = new Vector3(x, y, 0);
+            TrackerSword ts = sword.GetComponent<TrackerSword>();
+            ts.setColor(Color.RED, false);
+            ts.setDamage(getDamage());
+            ts.setLifeTime(200);
+            ts.setSpeed(getSpawnVel());
+            ts.setTargetPlayer(getPlayer());
+            ts.setTrackingTimer(35);
+        }
+    }
+}
