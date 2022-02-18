@@ -94,52 +94,263 @@ public class PlayerController : MonoBehaviour
 
     private void detectICollidable()
     {
-        if (moveVector.y < 0.0f)
+        float x = moveVector.x;
+        float y = moveVector.y;
+        if (x != 0 || y != 0)
         {
-            if (!doShot(Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y - pScaleY + pCastOffset), -Vector2.up, scaleMoveDir, LayerMask.GetMask("ICollidable")), Vector2.down))
-                if (!doShot(Physics2D.Raycast(new Vector2(transform.position.x + pScaleX - pOffset, transform.position.y - pScaleY + pCastOffset), -Vector2.up, scaleMoveDir, LayerMask.GetMask("ICollidable")), Vector2.down))
-                    doShot(Physics2D.Raycast(new Vector2(transform.position.x - pScaleX + pOffset, transform.position.y - pScaleY + pCastOffset), -Vector2.up, scaleMoveDir, LayerMask.GetMask("ICollidable")), Vector2.down);
-        }
-
-        if (moveVector.y > 0.0f)
-        {
-            if (!doShot(Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y + pScaleY - pCastOffset), Vector2.up, scaleMoveDir, LayerMask.GetMask("ICollidable")), Vector2.up))
-                if (!doShot(Physics2D.Raycast(new Vector2(transform.position.x + pScaleX - pOffset, transform.position.y + pScaleY - pCastOffset), Vector2.up, scaleMoveDir, LayerMask.GetMask("ICollidable")), Vector2.up))
-                    doShot(Physics2D.Raycast(new Vector2(transform.position.x - pScaleX + pOffset, transform.position.y + pScaleY - pCastOffset), Vector2.up, scaleMoveDir, LayerMask.GetMask("ICollidable")), Vector2.up);
-        }
-
-        if (moveVector.x > 0.0f)
-        {
-            if (!doShot(Physics2D.Raycast(new Vector2(transform.position.x + pScaleX - pCastOffset, transform.position.y), Vector2.right, scaleMoveDir, LayerMask.GetMask("ICollidable")), Vector2.right))
-                if (!doShot(Physics2D.Raycast(new Vector2(transform.position.x + pScaleX - pCastOffset, transform.position.y + pScaleY - pOffset), Vector2.right, scaleMoveDir, LayerMask.GetMask("ICollidable")), Vector2.right))
-                    doShot(Physics2D.Raycast(new Vector2(transform.position.x + pScaleX - pCastOffset, transform.position.y - pScaleY + pOffset), Vector2.right, scaleMoveDir, LayerMask.GetMask("ICollidable")), Vector2.right);
-        }
-
-        if (moveVector.x < 0.0f)
-        {
-            if (!doShot(Physics2D.Raycast(new Vector2(transform.position.x - pScaleX + pCastOffset, transform.position.y), Vector2.left, scaleMoveDir, LayerMask.GetMask("ICollidable")), Vector2.left))
-                if (!doShot(Physics2D.Raycast(new Vector2(transform.position.x - pScaleX + pCastOffset, transform.position.y + pScaleY - pOffset), Vector2.left, scaleMoveDir, LayerMask.GetMask("ICollidable")), Vector2.left))
-                    doShot(Physics2D.Raycast(new Vector2(transform.position.x - pScaleX + pCastOffset, transform.position.y - pScaleY + pOffset), Vector2.left, scaleMoveDir, LayerMask.GetMask("ICollidable")), Vector2.left);
+            float m = Mathf.Sqrt(Mathf.Pow(x, 2) + Mathf.Pow(y, 2));
+            RayCastData r = new RayCastData(x, y, m);
+            if (x > 0 && y > 0)
+            {
+                bool xb = xRightCheck(x, y);
+                bool yb = yUpCheck(x, y);
+                if (!xb && !yb)
+                {
+                    RaycastHit2D ray = cast(new Vector2(transform.position.x + pScaleX - pCastOffset, transform.position.y + pScaleY - pCastOffset), r);
+                    if (ray.collider != null)
+                    {
+                        diagonalSnap(x, y);
+                    }
+                }
+            }
+            else if (x > 0 && y < 0)
+            {
+                bool xb = xRightCheck(x, y);
+                bool yb = yDownCheck(x, y);
+                if (!xb && !yb)
+                {
+                    RaycastHit2D ray = cast(new Vector2(transform.position.x + pScaleX - pCastOffset, transform.position.y - pScaleY + pCastOffset), r);
+                    if (ray.collider != null)
+                    {
+                        diagonalSnap(x, y);
+                    }
+                }
+            }
+            else if (x < 0 && y > 0)
+            {
+                bool xb = xLeftCheck(x, y);
+                bool yb = yUpCheck(x, y);
+                if (!xb && !yb)
+                {
+                    RaycastHit2D ray = cast(new Vector2(transform.position.x + -pScaleX + pCastOffset, transform.position.y + pScaleY - pCastOffset), r);
+                    if (ray.collider != null)
+                    {
+                        diagonalSnap(x, y);
+                    }
+                }
+            }
+            else if (x < 0 && y < 0)
+            {
+                bool xb = xLeftCheck(x, y);
+                bool yb = yDownCheck(x, y);
+                if (!xb && !yb)
+                {
+                    RaycastHit2D ray = cast(new Vector2(transform.position.x + -pScaleX + pCastOffset, transform.position.y - pScaleY + pCastOffset), r);
+                    if (ray.collider != null)
+                    {
+                        diagonalSnap(x, y);
+                    }
+                }
+            }
+            else if (x > 0)
+            {
+                xRightCheck(x, y);
+            }
+            else if (x < 0)
+            {
+                xLeftCheck(x, y);
+            }
+            else if (y > 0)
+            {
+                yUpCheck(x, y);
+            }
+            else if (y < 0)
+            {
+                yDownCheck(x, y);
+            }
         }
     }
 
-    private void snapToCollider(RaycastHit2D hit, Vector2 dir)
+    private void diagonalSnap(float x, float y)
     {
-        transform.position = new Vector3(
-            hit.point.x + (dir.x > 0.0f ? -pScaleX : (dir.x < 0.0f ? pScaleX : -hit.point.x + transform.position.x)),
-            hit.point.y + (dir.y > 0.0f ? -pScaleY : (dir.y < 0.0f ? pScaleY : -hit.point.y + transform.position.y)),
-            transform.position.z);
+        if (x > y)
+        {
+            transform.position = new Vector3(transform.position.x + x, transform.position.y, transform.position.z);
+            moveVector = new Vector2(0.0f, y);
+            if (y < 0)
+            {
+                yDownCheck(0, y);
+            }
+            else
+            {
+                yUpCheck(0, y);
+            }
+        }
+        else
+        {
+            transform.position = new Vector3(transform.position.x, transform.position.y + y, transform.position.z);
+            moveVector = new Vector2(x, 0.0f);
+            if (x < 0)
+            {
+                xLeftCheck(x, 0);
+            }
+            else
+            {
+                xRightCheck(x, 0);
+            }
+        }
     }
 
-    private bool doShot(RaycastHit2D down, Vector2 dir)
+    private bool setMoveWithSnap(RaycastHit2D ray, Vector2 m)
     {
-        if (down.collider != null)
+        if (ray.collider != null)
         {
-            moveVector = new Vector2(dir.y == 0.0f ? 0.0f : moveVector.x, dir.x == 0.0f ? 0.0f : moveVector.y);
-            snapToCollider(down, dir);
+            if (!(m.x == 0.0f || m.y == 0.0f))
+            {
+                return false;
+            }
+            // Up / Down Cases
+            if (m.x == 0.0f)
+            {
+                moveVector = new Vector2(moveVector.x, 0.0f);
+
+                transform.position = new Vector3(
+                transform.position.x,
+                ray.point.y + (m.y > 0.0f ? -pScaleY : pScaleY),
+                transform.position.z);
+            }
+            // Left / Right Cases
+            else
+            {
+                moveVector = new Vector2(0.0f, moveVector.y);
+
+                transform.position = new Vector3(
+                ray.point.x + (m.x > 0.0f ? -pScaleX : pScaleX),
+                transform.position.y,
+                transform.position.z);
+            }
             return true;
         }
         return false;
+    }
+
+    private bool xRightCheck(float x, float y)
+    {
+        RaycastHit2D ray0 = cast(new Vector2(transform.position.x + pScaleX - pCastOffset, transform.position.y), x, 0, x);
+        RaycastHit2D ray1 = cast(new Vector2(transform.position.x + pScaleX - pCastOffset, transform.position.y + pScaleY - pOffset), x, 0, x);
+        RaycastHit2D ray2 = cast(new Vector2(transform.position.x + pScaleX - pCastOffset, transform.position.y - pScaleY + pOffset), x, 0, x);
+
+        if (ray0.collider != null)
+        {
+            setMoveWithSnap(ray0, Vector2.right);
+            return true;
+        }
+        else if (ray1.collider != null)
+        {
+            setMoveWithSnap(ray1, Vector2.right);
+            return true;
+        }
+        else if (ray2.collider != null)
+        {
+            setMoveWithSnap(ray2, Vector2.right);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private bool xLeftCheck(float x, float y)
+    {
+        RaycastHit2D ray0 = cast(new Vector2(transform.position.x - pScaleX + pCastOffset, transform.position.y), x, 0, -x);
+        RaycastHit2D ray1 = cast(new Vector2(transform.position.x - pScaleX + pCastOffset, transform.position.y + pScaleY - pOffset), x, 0, -x);
+        RaycastHit2D ray2 = cast(new Vector2(transform.position.x - pScaleX + pCastOffset, transform.position.y - pScaleY + pOffset), x, 0, -x);
+
+        if (ray0.collider != null)
+        {
+            setMoveWithSnap(ray0, Vector2.left);
+            return true;
+        }
+        else if (ray1.collider != null)
+        {
+            setMoveWithSnap(ray1, Vector2.left);
+            return true;
+        }
+        else if (ray2.collider != null)
+        {
+            setMoveWithSnap(ray2, Vector2.left);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private bool yUpCheck(float x, float y)
+    {
+        RaycastHit2D ray0 = cast(new Vector2(transform.position.x, transform.position.y + pScaleY - pCastOffset), 0, y, y);
+        RaycastHit2D ray1 = cast(new Vector2(transform.position.x + pScaleX - pOffset, transform.position.y + pScaleY - pCastOffset), 0, y, y);
+        RaycastHit2D ray2 = cast(new Vector2(transform.position.x - pScaleX + pOffset, transform.position.y + pScaleY - pCastOffset), 0, y, y);
+
+        if (ray0.collider != null)
+        {
+            setMoveWithSnap(ray0, Vector2.up);
+            return true;
+        }
+        else if (ray1.collider != null)
+        {
+            setMoveWithSnap(ray1, Vector2.up);
+            return true;
+        }
+        else if (ray2.collider != null)
+        {
+            setMoveWithSnap(ray2, Vector2.up);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private bool yDownCheck(float x, float y)
+    {
+        RaycastHit2D ray0 = cast(new Vector2(transform.position.x, transform.position.y - pScaleY + pCastOffset), 0, y, -y);
+        RaycastHit2D ray1 = cast(new Vector2(transform.position.x + pScaleX - pOffset, transform.position.y - pScaleY + pCastOffset), 0, y, -y);
+        RaycastHit2D ray2 = cast(new Vector2(transform.position.x - pScaleX + pOffset, transform.position.y - pScaleY + pCastOffset), 0, y, -y);
+
+        if (ray0.collider != null)
+        {
+
+            setMoveWithSnap(ray0, Vector2.down);
+            return true;
+        }
+        else if (ray1.collider != null)
+        {
+            setMoveWithSnap(ray1, Vector2.down);
+            return true;
+        }
+        else if (ray2.collider != null)
+        {
+            setMoveWithSnap(ray2, Vector2.down);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private RaycastHit2D cast(Vector2 spawnLoc, RayCastData r)
+    {
+        return Physics2D.Raycast(spawnLoc, new Vector2(r.getX(), r.getY()).normalized, r.getM(), LayerMask.GetMask("ICollidable"));
+    }
+
+    private RaycastHit2D cast(Vector2 spawnLoc, float x, float y, float m)
+    {
+        return Physics2D.Raycast(spawnLoc, new Vector2(x, y), m, LayerMask.GetMask("ICollidable"));
     }
 
     private void makeMove()
@@ -188,5 +399,19 @@ public class PlayerController : MonoBehaviour
     public Color getColor()
     {
         return activeColor;
+    }
+
+    protected class RayCastData
+    {
+        float x, y, m;
+        public RayCastData(float x, float y, float m)
+        {
+            this.x = x;
+            this.y = y;
+            this.m = m;
+        }
+        public float getX() { return x; }
+        public float getY() { return y; }
+        public float getM() { return m; }
     }
 }

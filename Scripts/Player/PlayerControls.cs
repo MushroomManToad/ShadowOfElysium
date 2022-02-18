@@ -125,6 +125,15 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Pause"",
+                    ""type"": ""Value"",
+                    ""id"": ""d4128987-6e0a-4d92-af50-644860c4dec1"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -248,6 +257,17 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""action"": ""Purple"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""45027c96-3fae-4d46-9832-06a062bbf5fa"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Pause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -267,6 +287,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         m_Player_Green = m_Player.FindAction("Green", throwIfNotFound: true);
         m_Player_Blue = m_Player.FindAction("Blue", throwIfNotFound: true);
         m_Player_Purple = m_Player.FindAction("Purple", throwIfNotFound: true);
+        m_Player_Pause = m_Player.FindAction("Pause", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -337,6 +358,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Green;
     private readonly InputAction m_Player_Blue;
     private readonly InputAction m_Player_Purple;
+    private readonly InputAction m_Player_Pause;
     public struct PlayerActions
     {
         private @PlayerControls m_Wrapper;
@@ -352,6 +374,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         public InputAction @Green => m_Wrapper.m_Player_Green;
         public InputAction @Blue => m_Wrapper.m_Player_Blue;
         public InputAction @Purple => m_Wrapper.m_Player_Purple;
+        public InputAction @Pause => m_Wrapper.m_Player_Pause;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -394,6 +417,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @Purple.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnPurple;
                 @Purple.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnPurple;
                 @Purple.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnPurple;
+                @Pause.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnPause;
+                @Pause.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnPause;
+                @Pause.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnPause;
             }
             m_Wrapper.m_PlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -431,6 +457,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @Purple.started += instance.OnPurple;
                 @Purple.performed += instance.OnPurple;
                 @Purple.canceled += instance.OnPurple;
+                @Pause.started += instance.OnPause;
+                @Pause.performed += instance.OnPause;
+                @Pause.canceled += instance.OnPause;
             }
         }
     }
@@ -448,5 +477,6 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         void OnGreen(InputAction.CallbackContext context);
         void OnBlue(InputAction.CallbackContext context);
         void OnPurple(InputAction.CallbackContext context);
+        void OnPause(InputAction.CallbackContext context);
     }
 }
