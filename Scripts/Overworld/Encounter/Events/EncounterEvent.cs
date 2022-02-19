@@ -24,10 +24,12 @@ public abstract class EncounterEvent : MonoBehaviour
         isFinished = true;
         isActive = false;
         postEvent();
+        EEventManager.removeEvent(this);
     }
 
     public void run()
     {
+        EEventManager.addEvent(this);
         preEvent();
         isActive = true;
     }
@@ -36,4 +38,5 @@ public abstract class EncounterEvent : MonoBehaviour
     public abstract void runEvent();
     public abstract void postEvent();
     public abstract bool finishCondition();
+    public abstract bool receiveInteract();
 }

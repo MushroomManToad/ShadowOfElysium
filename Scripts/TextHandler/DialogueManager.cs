@@ -77,6 +77,11 @@ public static class DialogueManager
 
     public static DialogueData getDialogueByID(string s)
     {
+        if(universalDialogue.Count == 0)
+        {
+            DialogueRegistry();
+            loadDialogueByFilepathToActive((string) registry[0]);
+        }
         if (activeDialogue.ContainsKey(s))
         {
             return activeDialogue[s];

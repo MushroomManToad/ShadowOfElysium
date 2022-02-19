@@ -14,6 +14,9 @@ public class OPlayerController : MonoBehaviour
     private float pCastOffset = 0.01f;
     public float scaleMoveDir;
 
+    private Facing facing = Facing.NORTH;
+    private float viewRange = 0.95f;
+
     private bool isMovingRight, isMovingLeft, isMovingUp, isMovingDown;
 
     private void Awake()
@@ -34,15 +37,35 @@ public class OPlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        playerControls.Player.Up.started += _ => { isMovingUp = true; };
-        playerControls.Player.Down.started += _ => { isMovingDown = true; };
-        playerControls.Player.Right.started += _ => { isMovingRight = true; };
-        playerControls.Player.Left.started += _ => { isMovingLeft = true; };
+        // Movement
+        // NORTH START
+        playerControls.Player.Up.started += _ => { 
+            isMovingUp = true;
+            if (!isMovingLeft && !isMovingRight && !isMovingDown) facing = Facing.NORTH;
+        };
+        // SOUTH START
+        playerControls.Player.Down.started += _ => { 
+            isMovingDown = true;
+            if (!isMovingLeft && !isMovingRight && !isMovingUp) facing = Facing.SOUTH;
+        };
+        // EAST START
+        playerControls.Player.Right.started += _ => { 
+            isMovingRight = true;
+            if (!isMovingLeft && !isMovingUp && !isMovingDown) facing = Facing.EAST;
+        };
+        // WEST START
+        playerControls.Player.Left.started += _ => { 
+            isMovingLeft = true;
+            if (!isMovingUp && !isMovingRight && !isMovingDown) facing = Facing.WEST;
+        };
 
         playerControls.Player.Up.canceled += _ => { isMovingUp = false; };
         playerControls.Player.Down.canceled += _ => { isMovingDown = false; };
         playerControls.Player.Right.canceled += _ => { isMovingRight = false; };
         playerControls.Player.Left.canceled += _ => { isMovingLeft = false; };
+
+        // Interaction
+        playerControls.Player.Confirm.started += _ => { sendInteract(); };
     }
 
     void FixedUpdate()
@@ -334,6 +357,45 @@ public class OPlayerController : MonoBehaviour
         transform.position = new Vector3(transform.position.x + moveVector.x,
                                  transform.position.y + moveVector.y,
                                  transform.position.z);
+    }
+
+    private void sendInteract()
+    {
+        IInteractible i = getFacingInteractible();
+        if (i != null)
+        {
+            if(!i.onInteract())
+            {
+                EEventManager.sendInteract();
+            }
+        }
+    }
+
+    private IInteractible getFacingInteractible()
+    {
+        RaycastHit2D hit = new RaycastHit2D();
+        switch(facing)
+        {
+            case (Facing.NORTH):
+                hit = cast(new Vector2(transform.position.x, transform.position.y), 0, 1, viewRange);
+                break;
+            case (Facing.EAST):
+                hit = cast(new Vector2(transform.position.x + pScaleX - pCastOffset, transform.position.y), 1, 0, viewRange);
+                break;
+            case (Facing.SOUTH):
+                hit = cast(new Vector2(transform.position.x, transform.position.y - pScaleY + pCastOffset), 0, -1, viewRange);
+                break;
+            case (Facing.WEST):
+                hit = cast(new Vector2(transform.position.x - pScaleX + pCastOffset, transform.position.y), -1, 0, viewRange);
+                break;
+            default:
+                break;
+        }
+        if (hit.collider != null && hit.collider.GetComponent<IInteractible>() != null)
+        {
+            return hit.collider.GetComponent<IInteractible>();
+        }
+        return null;
     }
 
     protected class RayCastData

@@ -4,13 +4,5 @@ using UnityEngine;
 
 public class IInteractible : MonoBehaviour
 {
-    public EncounterEvent e;
-
-    public virtual void onInteract()
-    {
-        if (e != null)
-        {
-            e.run();
-        }
-    }
+    public virtual bool onInteract() { return false; }
 }

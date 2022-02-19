@@ -6,6 +6,7 @@ public class DialogueEvent : EncounterEvent
 {
     public string[] dialogue;
     private int currDialogue = 0;
+    private int activeDialogue = -1;
     public OPlayerController player;
 
     public override void preEvent()
@@ -15,22 +16,34 @@ public class DialogueEvent : EncounterEvent
 
     public override void runEvent()
     {
-        if(currDialogue < dialogue.Length)
+        if(activeDialogue != currDialogue && currDialogue < dialogue.Length)
         {
-            // TODO if a new input has been received. 
-            Debug.Log(DialogueManager.getDialogueByID(dialogue[currDialogue]));
-            // Set that a new input was used.
-            // 
+            DialogueData data = DialogueManager.getDialogueByID(dialogue[currDialogue]);
+            // TODO -- render this instead of in console.
+            Debug.Log(data.getTextByKey(EnumDialogueKey.EN));
+            activeDialogue = currDialogue;
         }
     }
 
     public override void postEvent()
     {
-        
+        // Remove DialogueBox
+    }
+
+    public override bool receiveInteract()
+    {
+        advanceDialogue();
+        return true;
     }
 
     public override bool finishCondition()
     {
         return currDialogue >= dialogue.Length;
+    }
+
+    private bool advanceDialogue()
+    {
+        currDialogue++;
+        return true;
     }
 }

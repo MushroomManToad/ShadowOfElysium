@@ -22,6 +22,11 @@ public class SeriesEvent : EncounterEvent
 
     }
 
+    public override bool receiveInteract()
+    {
+        return false;
+    }
+
     public override bool finishCondition()
     {
         throw new System.NotImplementedException();
