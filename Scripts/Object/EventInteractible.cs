@@ -10,7 +10,6 @@ public class EventInteractible : IInteractible
     {
         if (e != null && !EEventManager.contains(e))
         {
-            EEventManager.addEvent(e);
             e.run();
             return true;
         }

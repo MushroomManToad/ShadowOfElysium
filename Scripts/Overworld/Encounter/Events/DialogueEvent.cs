@@ -12,6 +12,7 @@ public class DialogueEvent : EncounterEvent
     public override void preEvent()
     {
         // Load Dialogue Box in player UI
+        player.setFreezeInputs(true);
     }
 
     public override void runEvent()
@@ -28,6 +29,9 @@ public class DialogueEvent : EncounterEvent
     public override void postEvent()
     {
         // Remove DialogueBox
+        player.setFreezeInputs(false);
+        currDialogue = 0;
+        activeDialogue = -1;
     }
 
     public override bool receiveInteract()

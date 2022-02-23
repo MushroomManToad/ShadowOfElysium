@@ -19,6 +19,8 @@ public class OPlayerController : MonoBehaviour
 
     private bool isMovingRight, isMovingLeft, isMovingUp, isMovingDown;
 
+    private bool inputFrozen = false;
+
     private void Awake()
     {
         playerControls = new PlayerControls();
@@ -38,26 +40,10 @@ public class OPlayerController : MonoBehaviour
     void Start()
     {
         // Movement
-        // NORTH START
-        playerControls.Player.Up.started += _ => { 
-            isMovingUp = true;
-            if (!isMovingLeft && !isMovingRight && !isMovingDown) facing = Facing.NORTH;
-        };
-        // SOUTH START
-        playerControls.Player.Down.started += _ => { 
-            isMovingDown = true;
-            if (!isMovingLeft && !isMovingRight && !isMovingUp) facing = Facing.SOUTH;
-        };
-        // EAST START
-        playerControls.Player.Right.started += _ => { 
-            isMovingRight = true;
-            if (!isMovingLeft && !isMovingUp && !isMovingDown) facing = Facing.EAST;
-        };
-        // WEST START
-        playerControls.Player.Left.started += _ => { 
-            isMovingLeft = true;
-            if (!isMovingUp && !isMovingRight && !isMovingDown) facing = Facing.WEST;
-        };
+        playerControls.Player.Up.started += _ => { setMoveData(Facing.NORTH); };
+        playerControls.Player.Down.started += _ => { setMoveData(Facing.SOUTH); };
+        playerControls.Player.Right.started += _ => { setMoveData(Facing.EAST); };
+        playerControls.Player.Left.started += _ => { setMoveData(Facing.WEST); };
 
         playerControls.Player.Up.canceled += _ => { isMovingUp = false; };
         playerControls.Player.Down.canceled += _ => { isMovingDown = false; };
@@ -68,10 +54,39 @@ public class OPlayerController : MonoBehaviour
         playerControls.Player.Confirm.started += _ => { sendInteract(); };
     }
 
+    private void setMoveData(Facing dir)
+    {
+        switch (dir)
+        {
+            case (Facing.NORTH):
+                isMovingUp = true;
+                if (!inputFrozen && !isMovingLeft && !isMovingRight && !isMovingDown) setFacing(Facing.NORTH);
+                break;
+            case (Facing.SOUTH):
+                isMovingDown = true;
+                if (!inputFrozen && !isMovingLeft && !isMovingRight && !isMovingUp) setFacing(Facing.SOUTH);
+                break;
+            case (Facing.EAST):
+                isMovingRight = true;
+                if (!inputFrozen && !isMovingLeft && !isMovingUp && !isMovingDown) setFacing(Facing.EAST);
+                break;
+            case (Facing.WEST):
+                isMovingLeft = true;
+                if (!inputFrozen && !isMovingUp && !isMovingRight && !isMovingDown) setFacing(Facing.WEST);
+                break;
+            default:
+                Debug.LogError("Attempted to move in a nonexistent direction.");
+                break;
+        }
+    }
+
     void FixedUpdate()
     {
-        computeMove();
-        makeMove();
+        if (!inputFrozen)
+        {
+            computeMove();
+            makeMove();
+        }
     }
 
     private void computeMove()
@@ -396,6 +411,25 @@ public class OPlayerController : MonoBehaviour
             return hit.collider.GetComponent<IInteractible>();
         }
         return null;
+    }
+
+    public void setFreezeInputs(bool val)
+    {
+        inputFrozen = val;
+    }
+
+    public bool getFreezeInputs()
+    {
+        return inputFrozen;
+    }
+
+    /**
+     * This should *ALWAYS* be used, rather than facing = dir;
+     */
+    public void setFacing(Facing dir)
+    {
+        facing = dir;
+        // Code that actually reorients the player here.
     }
 
     protected class RayCastData
