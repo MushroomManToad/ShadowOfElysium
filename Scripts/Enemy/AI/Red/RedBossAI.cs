@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RedBossAI : EnemyAI
+public class RedBossAI : CrystalAI
 {
     public GameObject redDiamondSplitter, redDiamondProjectile;
 
@@ -37,5 +37,10 @@ public class RedBossAI : EnemyAI
     protected override void AITaskForce()
     {
 
+    }
+
+    protected override MoveCode defaultMove()
+    {
+        return MoveCode.START_CENTER_BOB;
     }
 }

@@ -98,7 +98,7 @@ public class OPlayerController : MonoBehaviour
         if (isMovingLeft) tryMoveVector = tryMoveVector + new Vector2(-scaleMoveDir, 0.0f);
         moveVector = tryMoveVector;
         applyForces();
-        detectICollidable();
+        detectIOCollidable();
     }
 
     private void applyForces()
@@ -106,7 +106,7 @@ public class OPlayerController : MonoBehaviour
 
     }
 
-    private void detectICollidable()
+    private void detectIOCollidable()
     {
         float x = moveVector.x;
         float y = moveVector.y;
@@ -359,12 +359,12 @@ public class OPlayerController : MonoBehaviour
 
     private RaycastHit2D cast(Vector2 spawnLoc, RayCastData r)
     {
-        return Physics2D.Raycast(spawnLoc, new Vector2(r.getX(), r.getY()).normalized, r.getM(), LayerMask.GetMask("ICollidable"));
+        return Physics2D.Raycast(spawnLoc, new Vector2(r.getX(), r.getY()).normalized, r.getM(), LayerMask.GetMask("IOCollidable"));
     }
 
     private RaycastHit2D cast(Vector2 spawnLoc, float x, float y, float m)
     {
-        return Physics2D.Raycast(spawnLoc, new Vector2(x, y), m, LayerMask.GetMask("ICollidable"));
+        return Physics2D.Raycast(spawnLoc, new Vector2(x, y), m, LayerMask.GetMask("IOCollidable"));
     }
 
     private void makeMove()

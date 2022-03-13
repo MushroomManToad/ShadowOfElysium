@@ -6,6 +6,12 @@ public static class EEventManager
 {
     public static ArrayList activeEvents = new ArrayList();
 
+    private static BattleEvent activeBattle;
+
+    /*
+     * Btw, Dying needs to wipe all data in here.
+     */
+
     public static void addEvent(EncounterEvent e)
     {
         activeEvents.Add(e);
@@ -34,5 +40,20 @@ public static class EEventManager
             }
         }
         return false;
+    }
+
+    public static int size()
+    {
+        return activeEvents.Count;
+    }
+
+    public static void setBattleEvent(BattleEvent e)
+    {
+        activeBattle = e;
+    }
+
+    public static void endBattleEvent()
+    {
+        activeBattle.setIsFinished(true);
     }
 }

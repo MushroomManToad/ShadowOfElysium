@@ -44,6 +44,11 @@ public abstract class EncounterEvent : MonoBehaviour
         isFinished = false;
     }
 
+    public bool getIsFinished()
+    {
+        return isFinished;
+    }
+
     public abstract void preEvent();
     public abstract void runEvent();
     public abstract void postEvent();

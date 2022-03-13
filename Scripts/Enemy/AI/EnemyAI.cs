@@ -36,10 +36,25 @@ public abstract class EnemyAI : MonoBehaviour
 
     private void FixedUpdate()
     {
+        renderEffects();
         preUpdate();
         runAITask();
         postUpdate();
     }
+
+
+    /*
+     * Manages the render thread in battle. First, do subclass effects (i.e. crystal movement), then attack-specific effects not tied to any specific object.
+     */
+    private void renderEffects()
+    {
+        subclassRenderer();
+        aiRenderer();
+    }
+
+    protected virtual void subclassRenderer(){}
+
+    protected virtual void aiRenderer(){}
 
     protected virtual void preUpdate()
     {
