@@ -23,6 +23,7 @@ public abstract class AITask
     }
 
     public abstract bool runCondition();
+    // Returns true when the attack should end.
     public abstract bool endCondition();
     public abstract void runAction();
     public abstract void endAction();
@@ -35,4 +36,14 @@ public abstract class AITask
     public virtual GameObject getPlayer() { return player; }
     public virtual GameObject getSplitter() { return splitter; }
     public virtual GameObject getProj() { return proj; }
+
+    // Crystal AI Util. Returns null if the attached EnemyAI is not a CrystalAI
+    public CrystalAI getCAI()
+    {
+        if (getAI() is CrystalAI)
+        {
+            return (CrystalAI) getAI();
+        }
+        return null;
+    }
 }

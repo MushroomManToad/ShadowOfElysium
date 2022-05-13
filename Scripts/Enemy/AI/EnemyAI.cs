@@ -16,6 +16,8 @@ public abstract class EnemyAI : MonoBehaviour
 
     private float maxHealth, currHealth;
 
+    public HPBar healthBar;
+
     // aiTaskS.add();
     protected abstract void AITaskSequence();
 
@@ -28,7 +30,9 @@ public abstract class EnemyAI : MonoBehaviour
     private void Start()
     {
         maxHealth = startHealth;
-        currHealth = startHealth / 4;
+        currHealth = startHealth / 2.0f;
+        updateHealthRenderer(false);
+        // Loads AITasks for future reference
         AITaskSequence();
         AITaskRandom();
         AITaskForce();
@@ -37,8 +41,11 @@ public abstract class EnemyAI : MonoBehaviour
     private void FixedUpdate()
     {
         renderEffects();
+        subClassPreUpdate();
         preUpdate();
+        subClassUpdate();
         runAITask();
+        subClassUpdate();
         postUpdate();
     }
 
@@ -56,10 +63,11 @@ public abstract class EnemyAI : MonoBehaviour
 
     protected virtual void aiRenderer(){}
 
-    protected virtual void preUpdate()
-    {
+    protected virtual void subClassPreUpdate() {}
+    protected virtual void subClassUpdate() { }
+    protected virtual void subClassPostUpdate() { }
 
-    }
+    protected virtual void preUpdate() { }
 
     protected void runAITask()
     {
@@ -125,16 +133,48 @@ public abstract class EnemyAI : MonoBehaviour
         return new Vector3(x, y, 0);
     }
 
-    public void setCurrHealth(float val) { currHealth = val; }
+    /*
+     * Enemy HP Methods
+     */
+    public void setCurrHealth(float val, bool flash) 
+    {
+        if (val > maxHealth) 
+        {
+            currHealth = maxHealth;
+        }
+        if (val < 0)
+        {
+            currHealth = 0;
+        }
+        else
+        {
+            currHealth = val;
+        }
+        updateHealthRenderer(true);
+    }
+    public virtual void damage(float amount) { setCurrHealth(currHealth -= amount, true); }
     public float getCurrHealth() { return currHealth; }
-    public void setMaxHealth(float val) { maxHealth = val; }
+    public void setMaxHealth(float val) 
+    {
+        maxHealth = val;
+        updateHealthRenderer(false);
+    }
     public float getMaxHealth() { return maxHealth; }
 
+    public void updateHealthRenderer(bool flash)
+    {
+        healthBar.syncHP(maxHealth, currHealth, flash);
+    }
+
+    /*
+     * Enemy AITask chooser helpers
+     */
     private AITask chooseRandomTask()
     {
         if (aiTaskR.Count > 0)
         {
-            ArrayList workingList = aiTaskR;
+            ArrayList workingList = new ArrayList();
+            foreach (AITask a in aiTaskR) {workingList.Add(a);}
             bool taskChosen = false;
             while (workingList.Count > 0 && !taskChosen)
             {

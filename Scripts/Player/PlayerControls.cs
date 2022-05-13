@@ -143,6 +143,15 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Slow"",
+                    ""type"": ""Button"",
+                    ""id"": ""b951e715-5a27-4c8c-93b3-6ba1028fb857"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -332,6 +341,17 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""action"": ""Confirm"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6bd0716c-978a-4fbe-acd6-62cc21951a1f"",
+                    ""path"": ""<Keyboard>/leftShift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Slow"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -353,6 +373,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         m_Player_Purple = m_Player.FindAction("Purple", throwIfNotFound: true);
         m_Player_Pause = m_Player.FindAction("Pause", throwIfNotFound: true);
         m_Player_Confirm = m_Player.FindAction("Confirm", throwIfNotFound: true);
+        m_Player_Slow = m_Player.FindAction("Slow", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -425,6 +446,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Purple;
     private readonly InputAction m_Player_Pause;
     private readonly InputAction m_Player_Confirm;
+    private readonly InputAction m_Player_Slow;
     public struct PlayerActions
     {
         private @PlayerControls m_Wrapper;
@@ -442,6 +464,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         public InputAction @Purple => m_Wrapper.m_Player_Purple;
         public InputAction @Pause => m_Wrapper.m_Player_Pause;
         public InputAction @Confirm => m_Wrapper.m_Player_Confirm;
+        public InputAction @Slow => m_Wrapper.m_Player_Slow;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -490,6 +513,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @Confirm.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnConfirm;
                 @Confirm.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnConfirm;
                 @Confirm.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnConfirm;
+                @Slow.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSlow;
+                @Slow.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSlow;
+                @Slow.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSlow;
             }
             m_Wrapper.m_PlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -533,6 +559,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @Confirm.started += instance.OnConfirm;
                 @Confirm.performed += instance.OnConfirm;
                 @Confirm.canceled += instance.OnConfirm;
+                @Slow.started += instance.OnSlow;
+                @Slow.performed += instance.OnSlow;
+                @Slow.canceled += instance.OnSlow;
             }
         }
     }
@@ -552,5 +581,6 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         void OnPurple(InputAction.CallbackContext context);
         void OnPause(InputAction.CallbackContext context);
         void OnConfirm(InputAction.CallbackContext context);
+        void OnSlow(InputAction.CallbackContext context);
     }
 }

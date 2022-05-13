@@ -32,6 +32,8 @@ public class AITaskRedThreeRingSpread : AITask
         if(timer == getDuration())
         {
             startAngle = (float)Random.Range(-angleOfSeparation, angleOfSeparation + 1);
+            // The Render Line
+            if (getCAI() != null) getCAI().sendMoveCode(MoveCode.CENTER_SLAM, false);
         }
         timer--;
         if(timer <= getDuration() - delay)

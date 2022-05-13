@@ -96,11 +96,11 @@ public class AITaskRedSwordOmnihit : AITask
 
     public override bool runCondition()
     {
-        if (getAI().getCurrHealth() / getAI().getMaxHealth() > 0.33f)
+        if (getAI().getCurrHealth() / getAI().getMaxHealth() <= 0.33f)
         {
-            return false;
+            return true;
         }
-        else return true;
+        else return false;
     }
 
     private void spawnSwordAt(float x, float y)

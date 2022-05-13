@@ -1,6 +1,10 @@
 ﻿using System.Collections;
 using UnityEngine;
 
+/*
+ * A Helper Class for encoding Crystal Function data.
+ * Can be either a position or Instruction. Handles all serialization and deserialization appropriately.
+ */
 public class CrystalFunctionEncoder
 {
     public enum CFEType {

@@ -6,8 +6,11 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     private PlayerControls playerControls;
+    // This vector is updated each frame by most of the move code methods. Used to store the in-calculation movement vector. 
+    // Used directly by makeMove() to update the transform.
     private Vector2 moveVector = new Vector2(0.0f, 0.0f);
     
+    // Contains all stats, inventory, health, etc.
     [SerializeField]
     private PlayerStats playerStats;
 
@@ -19,9 +22,21 @@ public class PlayerController : MonoBehaviour
 
     public float scaleMoveDir;
 
+    /* Boolean variables tracking which keys are input. Are set to true on key down, and are set to false on key released.
+     * Do not care about pause state. If the game is running, these variables are updating. Used ONLY in computeMove()
+     */
     private bool isMovingRight, isMovingLeft, isMovingUp, isMovingDown;
+    // Speed is halved using the left shift (or rebound, eventually) key. Calculated in computeMove().
+    private bool isSneaking = false;
 
     private Color activeColor = Color.WHITE;
+    private List<Color> activeColors = new List<Color>();
+
+    private bool isShooting;
+    private int shootingCD;
+    private int maxShootingCD = 25;
+
+    public GameObject whiteBullet, redBullet, orangeBullet, yellowBullet, greenBullet;
 
     public GameObject[] spriteColors;
 
@@ -66,11 +81,20 @@ public class PlayerController : MonoBehaviour
         playerControls.Player.Green.canceled += _ => { removeColor(Color.GREEN); };
         playerControls.Player.Blue.canceled += _ => { removeColor(Color.BLUE); };
         playerControls.Player.Purple.canceled += _ => { removeColor(Color.PURPLE); };
+
+        playerControls.Player.Shoot.started += _ => { startShooting(); };
+        playerControls.Player.Shoot.canceled += _ => { stopShooting(); };
+
+        playerControls.Player.Slow.started += _ => { isSneaking = true; };
+        playerControls.Player.Slow.canceled += _ => { isSneaking = false; };
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
+        // Current protocol is remove Lumens (and fix color accordingly), shoot, then move.
+        updateLumens();
+        shootLogic();
         computeMove();
         makeMove();
     }
@@ -78,10 +102,12 @@ public class PlayerController : MonoBehaviour
     private void computeMove()
     {
         Vector2 tryMoveVector = new Vector2(0.0f, 0.0f);
-        if (isMovingUp) tryMoveVector = tryMoveVector + new Vector2(0.0f, scaleMoveDir);
-        if (isMovingDown) tryMoveVector = tryMoveVector + new Vector2(0.0f, -scaleMoveDir);
-        if (isMovingRight) tryMoveVector = tryMoveVector + new Vector2(scaleMoveDir, 0.0f);
-        if (isMovingLeft) tryMoveVector = tryMoveVector + new Vector2(-scaleMoveDir, 0.0f);
+        // Create a new vector that is the base movement speed adjusted for sneaking
+        float moveAmount = scaleMoveDir * (isSneaking ? 0.5f : 1.0f);
+        if (isMovingUp) tryMoveVector = tryMoveVector + new Vector2(0.0f, moveAmount);
+        if (isMovingDown) tryMoveVector = tryMoveVector + new Vector2(0.0f, -moveAmount);
+        if (isMovingRight) tryMoveVector = tryMoveVector + new Vector2(moveAmount, 0.0f);
+        if (isMovingLeft) tryMoveVector = tryMoveVector + new Vector2(-moveAmount, 0.0f);
         moveVector = tryMoveVector;
         applyForces();
         detectICollidable();
@@ -91,6 +117,10 @@ public class PlayerController : MonoBehaviour
     {
 
     }
+
+    /* 
+     * BEGIN MOVEMENT + COLLISION SECTION
+     */
 
     private void detectICollidable()
     {
@@ -360,19 +390,51 @@ public class PlayerController : MonoBehaviour
                                  transform.position.z);
     }
 
+    /* 
+     * END MOVEMENT + COLLISION SECTION
+     */
+
     private void setColor(Color c)
     {
-        // TODO: Logic to check for having enough Light to shift
-        activeColor = c;
-        updateRenderer();
+        if(playerStats.getLumens() > 0)
+        {
+            activeColors.Insert(0, c);
+            activeColor = c;
+            updateRenderer();
+        }
     }
 
     private void removeColor(Color c)
     {
-        if(activeColor == c)
+        // Create pointer to current active color.
+        Color oldActive = activeColor;
+
+        // Check to make sure nothing breaks (It never should fail, though, but just to be safe)
+        if(activeColors.Contains(c))
         {
+            // Remove the color
+            activeColors.Remove(c);
+            // If more colors exist in the array, switch to those in order of intial button press.
+            if(activeColors.Count > 0)
+            {
+                activeColor = activeColors[0];
+            }
+            // Otherwise, go back to default white.
+            else
+            {
+                activeColor = Color.WHITE;
+            }
+        }
+        else
+        {
+            // Failsafe case
             activeColor = Color.WHITE;
             updateRenderer();
+        }
+        if (oldActive == c)
+        {
+            updateRenderer();
+            stopShooting();
         }
     }
 
@@ -399,6 +461,114 @@ public class PlayerController : MonoBehaviour
     public Color getColor()
     {
         return activeColor;
+    }
+
+    /*
+     * Shooting logic
+     */
+
+    /*
+     * Called on shoot input pressed. 
+     */
+    private void startShooting()
+    {
+        isShooting = true;
+    }
+
+    /*
+     * Called either on shooting input release OR when color changes.
+     * Shooting protocol continues when Lumens are exhausted. The shots just won't be fired until enough Lumens are regenerated.
+     */
+    private void stopShooting()
+    {
+        isShooting = false;
+    }
+
+    /*
+     * Called each FixedUpdate to handle shooting logic.
+     */
+    private void shootLogic()
+    {
+        if (shootingCD > 0) shootingCD--;
+        if (isShooting)
+        {
+            if (shootingCD <= 0)
+            {
+                switch (activeColor)
+                {
+                    case (Color.WHITE):
+                        if(playerStats.getLumens() >= playerStats.getLumenCost(activeColor))
+                        {
+                            playerStats.removeLumens(playerStats.getLumenCost(activeColor));
+                            // Set Actives called here to allow setting data before Start() is called.
+                            whiteBullet.SetActive(false);
+                            GameObject bullet = Instantiate(whiteBullet, new Vector3(), Quaternion.identity);
+                            if(bullet.GetComponent<IPlayerBullet>() != null)
+                            {
+                                bullet.GetComponent<IPlayerBullet>().setPlayerController(this);
+                            }
+                            bullet.SetActive(true);
+                            whiteBullet.SetActive(true);
+                            // TODO: Shake lumen meter
+                            shootingCD = maxShootingCD;
+                        }
+                        break;
+                    case (Color.RED):
+                        if (playerStats.getLumens() >= playerStats.getLumenCost(activeColor))
+                        {
+                            playerStats.removeLumens(playerStats.getLumenCost(activeColor));
+                            // Set Actives called here to allow setting data before Start() is called.
+                            redBullet.SetActive(false);
+                            GameObject bullet = Instantiate(redBullet, new Vector3(), Quaternion.identity);
+                            if (bullet.GetComponent<IPlayerBullet>() != null)
+                            {
+                                bullet.GetComponent<IPlayerBullet>().setPlayerController(this);
+                            }
+                            bullet.SetActive(true);
+                            redBullet.SetActive(true);
+                            // TODO: Shake lumen meter
+                            shootingCD = maxShootingCD;
+                        }
+                        break;
+                    case (Color.ORANGE):
+                        break;
+                    case (Color.YELLOW):
+                        break;
+                    case (Color.GREEN):
+                        break;
+                    case (Color.BLUE):
+                        break;
+                    case (Color.PURPLE):
+                        break;
+                    case (Color.BLACK):
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    /*
+     * END SHOOTING LOGIC
+     */
+
+    /*
+     * Called each frame to handle all Lumen-related events that must be updated each frame.
+     */
+    private void updateLumens()
+    {
+        if(activeColor != Color.WHITE)
+        {
+            playerStats.removeLumens(0.2f);
+            if(playerStats.getLumens() <= 0)
+            {
+                activeColors.Clear();
+                activeColor = Color.WHITE;
+                updateRenderer();
+                // TODO: Shake Lumen Meter.
+            }
+        }
     }
 
     protected class RayCastData

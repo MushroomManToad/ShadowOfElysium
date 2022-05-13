@@ -16,6 +16,11 @@ public class HPBar : MonoBehaviour
     private int flashTimer = 0;
     private int flashTimerMax = 3;
 
+    // Set in syncHP. Used by other methods that need to sync HP.
+    protected float maximumHealth, currentHealth;
+
+    private Color color;
+
     private Vector2 rectStartPos = new Vector2();
 
     private void Start()
@@ -44,7 +49,12 @@ public class HPBar : MonoBehaviour
         {
             damageAnimTimer = damageAnimTimerMax;
         }
+        this.maximumHealth = maxHealth;
+        this.currentHealth = currHealth;
+        subclassSync();
     }
+
+    protected virtual void subclassSync() { }
 
     public void setMortalRender()
     {
@@ -53,8 +63,11 @@ public class HPBar : MonoBehaviour
 
     public void setColor(Color c)
     {
-
+        this.color = c;
+        syncHP(maximumHealth, currentHealth, false);
     }
+
+    public Color getColor() { return this.color; }
 
 
     private void handleDamageAnim()

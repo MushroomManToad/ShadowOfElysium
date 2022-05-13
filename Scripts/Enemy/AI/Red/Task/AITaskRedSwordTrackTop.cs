@@ -6,6 +6,7 @@ public class AITaskRedSwordTrackTop : AITask
 {
     GameObject shortsword, longsword;
     int timer;
+    bool dir = false;
 
     public AITaskRedSwordTrackTop(AIDataSet data, GameObject shortsword, GameObject longsword) : base(data)
     {
@@ -17,29 +18,36 @@ public class AITaskRedSwordTrackTop : AITask
 
     public override void runAction()
     {
+        if(timer == getDuration())
+        {
+            dir = Random.value > 0.5f;
+            // The Render Line
+            if (getCAI() != null) getCAI().sendMoveCode(MoveCode.TOP_SWORD_SPAWN, false, dir ? 1 : 0);
+        }
+        int f = dir ? -1 : 1;
         // Heck math, man.
-        switch(getDuration() - timer)
+        switch(getDuration() - timer - 34)
         {
             case 0:
-                spawnSwordAt(-4.5f);
+                spawnSwordAt(f * -4.5f);
                 break;
             case 4:
-                spawnSwordAt(-3.0f);
+                spawnSwordAt(f * -3.0f);
                 break;
             case 9:
-                spawnSwordAt(-1.5f);
+                spawnSwordAt(f * -1.5f);
                 break;
             case 14:
                 spawnSwordAt(0.0f);
                 break;
             case 19:
-                spawnSwordAt(1.5f);
+                spawnSwordAt(f * 1.5f);
                 break;
             case 24:
-                spawnSwordAt(3.0f);
+                spawnSwordAt(f * 3.0f);
                 break;
             case 29:
-                spawnSwordAt(4.5f);
+                spawnSwordAt(f * 4.5f);
                 break;
             default:
                 break;

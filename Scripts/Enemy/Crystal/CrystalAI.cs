@@ -7,6 +7,11 @@ public abstract class CrystalAI : EnemyAI
     public CrystalMover crystal;
 
     /*
+     * Once HP reaches (or drops below) 0, the crystal breaks. Taking another hit ends the battle. (a few second crystal i-frame window to play the breaking animation)
+     */
+    private bool broken = false;
+
+    /*
      * For basic commands that require no Ops.
      */
     public void sendMoveCode(MoveCode code, bool append)
@@ -31,6 +36,37 @@ public abstract class CrystalAI : EnemyAI
         {
             sendMoveCode(defaultMove(), false);
         }
+    }
+
+    public override void damage(float amount)
+    {
+        /*
+         * Deal the damage
+         */
+        if(!broken)
+        {
+            base.damage(amount);
+            if (getCurrHealth() <= 0)
+            {
+                broken = true;
+                startBreakAnim();
+            }
+        }
+        /*
+         * Once damage makes it through when the Crystal is broken, the battle should end. Exact way it ends depends on whether or not the crystal was struck with Red light.
+         */
+        else
+        {
+
+        }
+    }
+
+    /*
+     * Applies I-frames and does the breaking animation before the fight's finale.
+     */
+    protected void startBreakAnim()
+    {
+
     }
 
     protected abstract MoveCode defaultMove();

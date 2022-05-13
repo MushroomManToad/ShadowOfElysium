@@ -4,10 +4,12 @@ using UnityEngine;
 
 public enum MoveCode
 {
+    WAIT,
     START_CENTER_BOB,
     CENTER_BOB,
     LERP_TO,
-    LERP_TO_ACCEL,
     LERP_TO_CENTER,
-    SWIRL
+    SWIRL,
+    CENTER_SLAM,
+    TOP_SWORD_SPAWN
 }
