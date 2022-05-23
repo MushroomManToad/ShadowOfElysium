@@ -7,14 +7,23 @@ public class AITaskRedDiamond : AITask
     bool hasFired = false;
     int currCase = 0;
 
-    int timer;
-
     Vector3[] firePos1 = { new Vector3(0.0f, -5.0f, 0.0f), new Vector3(0.0f, 5.0f, 0.0f), new Vector3(-5.0f, 0.0f, 0.0f), new Vector3(5.0f, 0.0f, 0.0f) };
     Vector3[] firePos2 = { new Vector3(-5.0f, -5.0f, 0.0f), new Vector3(5.0f, -5.0f, 0.0f), new Vector3(5.0f, 5.0f, 0.0f), new Vector3(-5.0f, 5.0f, 0.0f) };
 
     public AITaskRedDiamond(AIDataSet data) : base(data)
     {
+    }
 
+    public override void firstFrameUpdate()
+    {
+        hasFired = false;
+        currCase = 0;
+        base.firstFrameUpdate();
+    }
+
+    public override void setFirstFrameRender()
+    {
+        if (getCAI() != null) getCAI().sendMoveCode(MoveCode.SWIRL, false, 65, 0.95f, 0.95f, 2.0f * Mathf.PI, (3.0f / 2.0f) * Mathf.PI);
     }
 
     public override bool endCondition()
@@ -24,12 +33,7 @@ public class AITaskRedDiamond : AITask
 
     public override void runAction()
     {
-        if(timer == 0)
-        {
-            timer = getDuration();
-        }
-        timer--;
-        if (timer == getDuration() - 10 || timer == getDuration() - 60 || timer == getDuration() - 110)
+        if (getTimer() == getDuration() - 10 || getTimer() == getDuration() - 60 || getTimer() == getDuration() - 110)
         {
             if (!hasFired)
             {
@@ -87,9 +91,6 @@ public class AITaskRedDiamond : AITask
 
     public override void endAction()
     {
-        hasFired = false;
-        currCase = 0;
-        timer = 0;
     }
 
     public override bool runCondition()
@@ -99,6 +100,7 @@ public class AITaskRedDiamond : AITask
 
     public override float getSpawnVel()
     {
+        // Wait holy f*zz, it gets faster in phase 3??
         return getAI().getCurrHealth() / getAI().getMaxHealth() > 0.33f ? base.getSpawnVel() : base.getSpawnVel() * 1.2f;
     }
 }

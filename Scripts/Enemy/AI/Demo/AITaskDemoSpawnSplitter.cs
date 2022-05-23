@@ -16,6 +16,11 @@ public class AITaskDemoSpawnSplitter : AITask
         return false;
     }
 
+    public override void setFirstFrameRender()
+    {
+        //throw new System.NotImplementedException();
+    }
+
     public override void runAction()
     {
         if (!hasFired)

@@ -11,8 +11,6 @@ public class AITaskRedThreeRingSpread : AITask
     int numProj;
     int delay;
 
-    int timer = 0;
-
     int atkTimer = 0;
     int atkTimerMax = 0;
 
@@ -23,20 +21,24 @@ public class AITaskRedThreeRingSpread : AITask
         this.numProj = numProj;
         this.delay = delay;
         atkTimerMax = gap;
+    }
 
-        timer = getDuration();
+    public override void firstFrameUpdate()
+    {
+        atkTimer = 0;
+        currRing = 0;
+        startAngle = (float)Random.Range(-angleOfSeparation, angleOfSeparation + 1);
+        base.firstFrameUpdate();
+    }
+
+    public override void setFirstFrameRender()
+    {
+        if (getCAI() != null) getCAI().sendMoveCode(MoveCode.CENTER_SLAM, false);
     }
 
     public override void runAction()
     {
-        if(timer == getDuration())
-        {
-            startAngle = (float)Random.Range(-angleOfSeparation, angleOfSeparation + 1);
-            // The Render Line
-            if (getCAI() != null) getCAI().sendMoveCode(MoveCode.CENTER_SLAM, false);
-        }
-        timer--;
-        if(timer <= getDuration() - delay)
+        if(getTimer() <= getDuration() - delay)
         {
             if(atkTimer <= 0)
             {
@@ -85,15 +87,11 @@ public class AITaskRedThreeRingSpread : AITask
 
     public override void endAction()
     {
-        timer = getDuration();
-        atkTimer = 0;
-        currRing = 0;
     }
 
     public override bool endCondition()
     {
-        if (timer < 0) return true;
-        else return false;
+        return false;
     }
 
     public override bool runCondition()

@@ -5,28 +5,30 @@ using UnityEngine;
 public class AITaskRedSwordTrackTop : AITask
 {
     GameObject shortsword, longsword;
-    int timer;
     bool dir = false;
 
     public AITaskRedSwordTrackTop(AIDataSet data, GameObject shortsword, GameObject longsword) : base(data)
     {
         this.shortsword = shortsword;
         this.longsword = longsword;
+    }
 
-        timer = getDuration();
+    public override void firstFrameUpdate()
+    {
+        dir = Random.value > 0.5f;
+        base.firstFrameUpdate();
+    }
+
+    public override void setFirstFrameRender()
+    {
+        if (getCAI() != null) getCAI().sendMoveCode(MoveCode.TOP_SWORD_SPAWN, false, dir ? 1 : 0);
     }
 
     public override void runAction()
     {
-        if(timer == getDuration())
-        {
-            dir = Random.value > 0.5f;
-            // The Render Line
-            if (getCAI() != null) getCAI().sendMoveCode(MoveCode.TOP_SWORD_SPAWN, false, dir ? 1 : 0);
-        }
         int f = dir ? -1 : 1;
         // Heck math, man.
-        switch(getDuration() - timer - 34)
+        switch(getDuration() - getTimer() - 34)
         {
             case 0:
                 spawnSwordAt(f * -4.5f);
@@ -52,12 +54,10 @@ public class AITaskRedSwordTrackTop : AITask
             default:
                 break;
         }
-        timer--;
     }
 
     public override void endAction()
     {
-        timer = getDuration();
     }
 
     public override bool endCondition()

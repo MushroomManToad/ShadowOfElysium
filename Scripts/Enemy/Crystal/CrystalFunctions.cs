@@ -96,10 +96,42 @@ public static class CrystalFunctions
         }
     }
 
-    /*
-     * Takes no ops.
+    /* Moves the crystal along an Ellipse {x = acost, y = bsint}
+     * ops[0] = frames
+     * ops[1] = a
+     * ops[2] = b
+     * ops[3] = tMax
+     * ops[4] = startingAngle
      */
-    public static void start_center_bob(Stack<CrystalFunctionEncoder> uPos, float[] ops, Transform transform)
+    public static void ellipticalMotion(Stack<CrystalFunctionEncoder> uPos, float[] ops, Transform transform)
+    {
+        // Radians Per Frame
+        float frames = ops[0];
+        float a = ops[1];
+        float b = ops[2];
+        float tMax = ops[3];
+        float startingAngle = ops[4];
+        float rpf = tMax / frames;
+
+        float initialX = transform.position.x - a * Mathf.Cos(startingAngle);
+        float initialY = transform.position.y - b * Mathf.Sin(startingAngle);
+
+        Stack<CrystalFunctionEncoder> q = new Stack<CrystalFunctionEncoder>((int)frames);
+
+        for (int i = 0; i < frames; i++)
+        {
+            float t = i * rpf;
+
+            q.Push(new CrystalFunctionEncoder(initialX + a * Mathf.Cos(startingAngle + t), initialY + b * Mathf.Sin(startingAngle + t)));
+        }
+
+        pushToStack(uPos, q);
+    }
+
+        /*
+         * Takes no ops.
+         */
+        public static void start_center_bob(Stack<CrystalFunctionEncoder> uPos, float[] ops, Transform transform)
     {
         Stack<CrystalFunctionEncoder> q = new Stack<CrystalFunctionEncoder>(2);
         q.Push(new CrystalFunctionEncoder(MoveCode.LERP_TO_CENTER, true, 30));

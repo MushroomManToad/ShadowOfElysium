@@ -5,20 +5,32 @@ using UnityEngine;
 public class AITaskRedSwordOmnihit : AITask
 {
     private GameObject longSword;
-    private int timer, breakDur, ssT, num;
+    private int breakDur, ssT, num;
     private bool nextState = false;
 
     public AITaskRedSwordOmnihit(AIDataSet data, GameObject longSword, int breakDur) : base(data)
     {
         this.longSword = longSword;
-        timer = getDuration();
         this.breakDur = breakDur;
         nextState = Random.Range(0.0f, 1.0f) < 0.5f ? true : false;
     }
 
+    public override void firstFrameUpdate()
+    {
+        nextState = Random.Range(0.0f, 1.0f) < 0.5f ? true : false;
+        ssT = 0;
+        num = 0;
+        base.firstFrameUpdate();
+    }
+
+    public override void setFirstFrameRender()
+    {
+        throw new System.NotImplementedException();
+    }
+
     public override void runAction()
     {
-        if (getDuration() - timer < 31)
+        if (getDuration() - getTimer() < 31)
         {
             if (ssT == 0)
             {
@@ -28,7 +40,7 @@ public class AITaskRedSwordOmnihit : AITask
             }
             else ssT--;
         }
-        else if (getDuration() - timer - breakDur < 31 && getDuration() - timer - breakDur >= 0)
+        else if (getDuration() - getTimer() - breakDur < 31 && getDuration() - getTimer() - breakDur >= 0)
         {
             if (nextState)
             {
@@ -51,7 +63,7 @@ public class AITaskRedSwordOmnihit : AITask
                 else ssT--;
             }
         }
-        else if (getDuration() - timer - breakDur * 2 < 31 && getDuration() - timer - breakDur * 2 >= 0)
+        else if (getDuration() - getTimer() - breakDur * 2 < 31 && getDuration() - getTimer() - breakDur * 2 >= 0)
         {
             if (nextState)
             {
@@ -78,15 +90,10 @@ public class AITaskRedSwordOmnihit : AITask
         {
             ssT = 0;
         }
-        timer--;
     }
 
     public override void endAction()
     {
-        timer = getDuration();
-        ssT = 0;
-        num = 0;
-        nextState = Random.Range(0.0f, 1.0f) < 0.5f ? true : false;
     }
 
     public override bool endCondition()

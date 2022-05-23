@@ -29,6 +29,9 @@ public class CrystalMover : MonoBehaviour
             case (MoveCode.LERP_TO_CENTER):
                 CrystalFunctions.lerp_to_center(uPos, ops, transform);
                 break;
+            case (MoveCode.SWIRL):
+                CrystalFunctions.ellipticalMotion(uPos, ops, transform);
+                break;
             case (MoveCode.CENTER_SLAM):
                 CrystalFunctions.center_smash(uPos, ops, transform);
                 break;

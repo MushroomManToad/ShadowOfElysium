@@ -12,8 +12,6 @@ public class AITaskMultiRingSpread : AITask
     int numProj;
     int delay;
 
-    int timer = 0;
-
     int atkTimer = 0;
     int atkTimer2 = 0;
     int atkTimerMax = 0;
@@ -30,19 +28,27 @@ public class AITaskMultiRingSpread : AITask
         this.delay = delay;
         atkTimerMax = gap;
         atkTimerMax2 = gap * 3 / 2;
+    }
 
-        timer = getDuration();
+    public override void setFirstFrameRender()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override void firstFrameUpdate()
+    {
+        atkTimer = 0;
+        currRing = 0;
+        atkTimer2 = 0;
+        currRing2 = 0;
         ring2Dir = Random.Range(0.0f, 1.0f) < 0.5f;
+        startAngle = (float)Random.Range(-angleOfSeparation, angleOfSeparation + 1);
+        base.firstFrameUpdate();
     }
 
     public override void runAction()
     {
-        if (timer == getDuration())
-        {
-            startAngle = (float)Random.Range(-angleOfSeparation, angleOfSeparation + 1);
-        }
-        timer--;
-        if (timer <= getDuration() - delay)
+        if (getTimer() <= getDuration() - delay)
         {
             if (atkTimer <= 0)
             {
@@ -61,7 +67,7 @@ public class AITaskMultiRingSpread : AITask
             }
             atkTimer--;
         }
-        if(timer <= getDuration() - delay * 2)
+        if(getTimer() <= getDuration() - delay * 2)
         {
             if (atkTimer2 <= 0)
             {
@@ -84,12 +90,6 @@ public class AITaskMultiRingSpread : AITask
 
     public override void endAction()
     {
-        timer = getDuration();
-        atkTimer = 0;
-        currRing = 0;
-        atkTimer2 = 0;
-        currRing2 = 0;
-        ring2Dir = Random.Range(0.0f, 1.0f) < 0.5f;
     }
 
     private void setProjVals(SplitterShooter shooter, float aOS, Color[] c, float spawnAngle, int cR)
@@ -139,8 +139,7 @@ public class AITaskMultiRingSpread : AITask
 
     public override bool endCondition()
     {
-        if (timer < 0) return true;
-        else return false;
+        return false;
     }
 
     public override bool runCondition()

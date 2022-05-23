@@ -2,9 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AITaskTemplate : AITask
+public class AITaskRedSmite: AITask
 {
-    public AITaskTemplate(AIDataSet data) : base(data)
+    bool hasRun = false;
+
+    public AITaskRedSmite(AIDataSet data) : base(data)
     {
 
     }
@@ -38,6 +40,6 @@ public class AITaskTemplate : AITask
 
     public override bool runCondition()
     {
-        return true;
+        return !hasRun && getAI().getHealthPercent() < 0.33f;
     }
 }
